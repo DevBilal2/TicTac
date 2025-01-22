@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { minimax } from "../Utilities/utility";
 import { checkWinner } from "../Utilities/utility";
@@ -19,7 +19,7 @@ export default function TwoPlayer() {
 
   const easy = selectedDifficulty;
 
-  const BestMove = (board) => {
+  const BestMove = useCallback((board) => {
     let bestScore = -Infinity;
     let bestMove = null;
 
@@ -38,7 +38,7 @@ export default function TwoPlayer() {
     }
 
     return bestMove; // Return the best move (row, col)
-  };
+  },[easy]);
 
   const handleReset = () => {
     setBoard([
@@ -51,13 +51,13 @@ export default function TwoPlayer() {
     setGameover(false);
   };
 
-  const checkDraw = () => {
+  const checkDraw = useCallback(() => {
     if (board.every((row) => row.every((cell) => cell !== "")) && !winner) {
       setGameover(true);
     }
-  };
+  }, [board, winner]);
 
-  const botPlays = () => {
+  const botPlays = useCallback(() => {
     // Check if the bot should make a move
     if (gamemode === "bot" && turn === "O" && !winner && !gameover) {
       const AiMove = BestMove(board); // Best calculated move for hard mode
@@ -75,7 +75,7 @@ export default function TwoPlayer() {
       setWinner(checkWinner(newBoard));
       setTurn("X");
     }
-  };
+  }, [BestMove, board, gamemode, gameover, turn, winner]);
 
   const handleClick = (rowIndex, colIndex) => {
     if (gamemode === "bot" && turn === "O") return;
@@ -100,7 +100,7 @@ export default function TwoPlayer() {
 
       return () => clearTimeout(timeout);
     }
-  }, [turn, gamemode, winner, gameover, board]);
+  }, [turn, gamemode, winner, gameover, board, botPlays, checkDraw]);
   return (
     <div className="bg-black w-full h-screen flex flex-col justify-center items-center">
       <div className=" h-[20%] w-full">
